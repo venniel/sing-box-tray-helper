@@ -9,8 +9,8 @@ import (
 )
 
 const (
-	optionsFilename = "sing-box-go.ini"
-	optionsSection  = "sing-box-go"
+	optionsFilename = "velix.ini"
+	optionsSection  = "velix"
 )
 
 type tunStartMode int

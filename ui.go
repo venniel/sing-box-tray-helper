@@ -13,7 +13,7 @@ import (
 )
 
 const (
-	mainWindowClass = "sing-box-go-main"
+	mainWindowClass = "velix-main"
 	wmAppDispatch   = wmApp + 2
 	trayIconID      = 1
 
@@ -139,7 +139,7 @@ func newMainUI(d *drover, flags appFlags) (*mainUI, error) {
 	}
 
 	// The window is hidden; an empty title keeps screen readers from
-	// announcing "sing-box-go" when the tray menu takes the foreground.
+	// announcing "Velix" when the tray menu takes the foreground.
 	hwnd := createWindowEx(0, mainWindowClass, "", wsPopup, 0, 0, 0, 0, 0, 0, hInstance, 0)
 	if hwnd == 0 {
 		return nil, errors.New("Failed to create main window.")

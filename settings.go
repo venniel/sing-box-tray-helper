@@ -13,7 +13,7 @@ import (
 )
 
 const (
-	settingsWindowClass = "sing-box-go-settings"
+	settingsWindowClass = "velix-settings"
 
 	idSettingsCoreEdit     = 1001
 	idSettingsBrowseCore   = 1002
@@ -123,9 +123,9 @@ func newSettingsDialog(owner uintptr, firstRun bool, errorMessage string) (*sett
 	}
 	s.initialConfigFile = configFile
 
-	caption := "sing-box-go 设置"
+	caption := "Velix 设置"
 	if firstRun {
-		caption = "sing-box-go 初始设置"
+		caption = "Velix 初始设置"
 	}
 
 	s.dpi = getSystemDPI()

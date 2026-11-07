@@ -7,7 +7,7 @@ import (
 )
 
 const (
-	appTitle = "sing-box-go"
+	appTitle = "Velix"
 
 	// Outwait the old instance's graceful core stop (10s budget) plus its
 	// output drain on restart.
@@ -25,7 +25,7 @@ func main() {
 
 	flags := parseAppFlags(os.Args[1:])
 
-	if !acquireSingleInstance("SingBoxGo_SingleInstance_Mutex", flags.has(afRestart), restartHandoffTimeoutMs) {
+	if !acquireSingleInstance("Velix_SingleInstance_Mutex", flags.has(afRestart), restartHandoffTimeoutMs) {
 		messageBox("Another instance of this application is already running.", appTitle, mbIconError)
 		return
 	}

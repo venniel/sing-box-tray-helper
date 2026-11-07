@@ -138,7 +138,9 @@ func newMainUI(d *drover, flags appFlags) (*mainUI, error) {
 		}
 	}
 
-	hwnd := createWindowEx(0, mainWindowClass, appTitle, wsPopup, 0, 0, 0, 0, 0, 0, hInstance, 0)
+	// The window is hidden; an empty title keeps screen readers from
+	// announcing "sing-box-go" when the tray menu takes the foreground.
+	hwnd := createWindowEx(0, mainWindowClass, "", wsPopup, 0, 0, 0, 0, 0, 0, hInstance, 0)
 	if hwnd == 0 {
 		return nil, errors.New("Failed to create main window.")
 	}

@@ -7,14 +7,8 @@ import (
 	"unsafe"
 )
 
-//go:embed icon.ico
-var iconEnabledData []byte
-
-//go:embed icon_disabled.ico
-var iconDisabledData []byte
-
-//go:embed icon_tun.ico
-var iconTunData []byte
+//go:embed assets/velix.ico
+var iconData []byte
 
 type iconDirEntry struct {
 	width    int
@@ -114,7 +108,7 @@ func loadEmbeddedIcon(data []byte, cx, cy int) uintptr {
 }
 
 func loadApplicationIcon(cx, cy int) uintptr {
-	icon := loadEmbeddedIcon(iconEnabledData, cx, cy)
+	icon := loadEmbeddedIcon(iconData, cx, cy)
 	if icon != 0 {
 		return icon
 	}

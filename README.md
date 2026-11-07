@@ -227,11 +227,12 @@ go test .
 `-H=windowsgui` suppresses the console window. The UI is written directly against Win32 (GDI/user32/shell32), so the
 executable has no runtime dependencies beyond the standard Windows system libraries.
 
-The Windows version resource is checked in as `velix_windows_amd64.syso` and generated from `versioninfo.json` with
-goversioninfo; regenerate it only when the metadata changes:
+The Windows version resource and application icon are checked in as `velix_windows_amd64.syso`, generated from
+`versioninfo.json` and `assets/velix.ico` (master `assets/velix.png`) with goversioninfo; regenerate it only when the
+metadata or icon changes:
 
 ```sh
-go run github.com/josephspurrier/goversioninfo/cmd/goversioninfo@latest -64 -o velix_windows_amd64.syso versioninfo.json
+go run github.com/josephspurrier/goversioninfo/cmd/goversioninfo@latest -64 -icon assets/velix.ico -o velix_windows_amd64.syso versioninfo.json
 ```
 
 ### Source layout
@@ -249,6 +250,7 @@ go run github.com/josephspurrier/goversioninfo/cmd/goversioninfo@latest -64 -o v
 | `options.go` | INI options, including the remembered TUN and system proxy switches |
 | `autostart.go`, `elevation.go`, `singleinstance.go` | Windows integration helpers |
 | `systemproxy.go`, `tuncleanup.go`, `logger.go` | System proxy, Wintun cleanup, logging |
+| `assets/velix.ico`, `assets/velix.png` | Executable and tray icon plus its PNG master |
 
 ## Limitations
 

@@ -44,9 +44,7 @@ type mainUI struct {
 	hwnd         uintptr
 	startupFlags appFlags
 
-	hIconEnabled   uintptr
-	hIconDisabled  uintptr
-	hIconTun       uintptr
+	hIcon          uintptr
 	hIconLarge     uintptr
 	taskbarCreated uint32
 	trayAdded      bool
@@ -105,17 +103,9 @@ func newMainUI(d *drover, flags appFlags) (*mainUI, error) {
 	if smallY <= 0 {
 		smallY = 16
 	}
-	u.hIconEnabled = loadEmbeddedIcon(iconEnabledData, smallX, smallY)
-	u.hIconDisabled = loadEmbeddedIcon(iconDisabledData, smallX, smallY)
-	u.hIconTun = loadEmbeddedIcon(iconTunData, smallX, smallY)
-	if u.hIconEnabled == 0 {
-		u.hIconEnabled = loadApplicationIcon(smallX, smallY)
-	}
-	if u.hIconDisabled == 0 {
-		u.hIconDisabled = u.hIconEnabled
-	}
-	if u.hIconTun == 0 {
-		u.hIconTun = u.hIconEnabled
+	u.hIcon = loadEmbeddedIcon(iconData, smallX, smallY)
+	if u.hIcon == 0 {
+		u.hIcon = loadApplicationIcon(smallX, smallY)
 	}
 
 	wc := wndClassEx{
@@ -126,7 +116,7 @@ func newMainUI(d *drover, flags appFlags) (*mainUI, error) {
 		HCursor:       cursor,
 		HbrBackground: 0,
 		LpszClassName: utf16Ptr(mainWindowClass),
-		HIconSm:       u.hIconEnabled,
+		HIconSm:       u.hIcon,
 	}
 	wc.CbSize = uint32(unsafe.Sizeof(wc))
 
@@ -274,32 +264,19 @@ func (u *mainUI) handleMessage(hwnd, msg, wparam, lparam uintptr) uintptr {
 
 func (u *mainUI) cleanup() {
 	u.removeTrayIcon()
-	// Disabled/TUN may have fallen back to the enabled icon; destroy each
-	// distinct handle once.
+	// Destroy each distinct icon handle once.
 	destroyed := make(map[uintptr]bool)
-	for _, icon := range []uintptr{u.hIconEnabled, u.hIconDisabled, u.hIconTun, u.hIconLarge} {
+	for _, icon := range []uintptr{u.hIcon, u.hIconLarge} {
 		if icon != 0 && !destroyed[icon] {
 			destroyed[icon] = true
 			pDestroyIcon.Call(icon)
 		}
 	}
-	u.hIconEnabled = 0
-	u.hIconDisabled = 0
-	u.hIconTun = 0
+	u.hIcon = 0
 	u.hIconLarge = 0
 }
 
 // --- Tray icon -----------------------------------------------------------
-
-func (u *mainUI) currentTrayIcon() uintptr {
-	if u.isTunActive {
-		return u.hIconTun
-	}
-	if u.isSystemProxyActive {
-		return u.hIconEnabled
-	}
-	return u.hIconDisabled
-}
 
 func (u *mainUI) addTrayIcon() {
 	if u.hwnd == 0 {
@@ -312,7 +289,7 @@ func (u *mainUI) addTrayIcon() {
 	nid.UID = trayIconID
 	nid.UFlags = nifMessage | nifIcon | nifTip | nifShowTip
 	nid.UCallbackMessage = wmAppTray
-	nid.HIcon = u.currentTrayIcon()
+	nid.HIcon = u.hIcon
 	copyToUTF16Array(nid.SzTip[:], appTitle)
 
 	r, _, _ := pShellNotifyIconW.Call(nimAdd, uintptr(unsafe.Pointer(&nid)))
@@ -343,7 +320,7 @@ func (u *mainUI) updateTrayIcon() {
 	nid.HWnd = u.hwnd
 	nid.UID = trayIconID
 	nid.UFlags = nifIcon | nifShowTip
-	nid.HIcon = u.currentTrayIcon()
+	nid.HIcon = u.hIcon
 	copyToUTF16Array(nid.SzTip[:], appTitle)
 	pShellNotifyIconW.Call(nimModify, uintptr(unsafe.Pointer(&nid)))
 	runtime.KeepAlive(&nid)

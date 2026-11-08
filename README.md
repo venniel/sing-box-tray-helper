@@ -250,7 +250,7 @@ go run github.com/josephspurrier/goversioninfo/cmd/goversioninfo@latest -64 -ico
 | `options.go` | INI options, including the remembered TUN and system proxy switches |
 | `autostart.go`, `elevation.go`, `singleinstance.go` | Windows integration helpers |
 | `systemproxy.go`, `tuncleanup.go`, `logger.go` | System proxy, Wintun cleanup, logging |
-| `assets/velix.ico`, `assets/velix.png` | Executable and tray icon plus its PNG master |
+| `assets/velix.ico`, `assets/velix.png` | Executable and tray icon, the 512px PNG master, per-size `assets/velix-*.png` exports and the `assets/velix.svg` vector source |
 
 ## Limitations
 

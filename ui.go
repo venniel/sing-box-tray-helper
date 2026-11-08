@@ -572,7 +572,7 @@ func (u *mainUI) executeMenuCommand(cmd uint32) {
 		u.toggleAutostart()
 		return
 	case idMenuHomepage:
-		shellOpen("https://github.com/hdrover/sing-box-drover")
+		shellOpen("https://github.com/venniel/Velix")
 		return
 	case idMenuDashboard:
 		shellOpen(u.d.sbConfig.ClashAPI.DashboardURL())

@@ -13,7 +13,7 @@ import (
 )
 
 const (
-	settingsWindowClass = "velix-settings"
+	settingsWindowClass = "sth-settings"
 
 	idSettingsCoreEdit     = 1001
 	idSettingsBrowseCore   = 1002
@@ -123,9 +123,9 @@ func newSettingsDialog(owner uintptr, firstRun bool, errorMessage string) (*sett
 	}
 	s.initialConfigFile = configFile
 
-	caption := "Velix 设置"
+	caption := appTitle + " 设置"
 	if firstRun {
-		caption = "Velix 初始设置"
+		caption = appTitle + " 初始设置"
 	}
 
 	s.dpi = getSystemDPI()

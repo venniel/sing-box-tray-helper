@@ -7,7 +7,8 @@ import (
 )
 
 const (
-	appTitle = "Velix"
+	appTitle     = "sing-box tray helper"
+	appShortName = "sing-box"
 
 	// Outwait the old instance's graceful core stop (10s budget) plus its
 	// output drain on restart.
@@ -25,7 +26,7 @@ func main() {
 
 	flags := parseAppFlags(os.Args[1:])
 
-	if !acquireSingleInstance("Velix_SingleInstance_Mutex", flags.has(afRestart), restartHandoffTimeoutMs) {
+	if !acquireSingleInstance("STH_SingleInstance_Mutex", flags.has(afRestart), restartHandoffTimeoutMs) {
 		messageBox("Another instance of this application is already running.", appTitle, mbIconError)
 		return
 	}

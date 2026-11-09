@@ -7,7 +7,7 @@ import (
 	"unsafe"
 )
 
-//go:embed assets/velix.ico
+//go:embed assets/sth.ico
 var iconData []byte
 
 type iconDirEntry struct {

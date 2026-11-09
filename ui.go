@@ -13,7 +13,7 @@ import (
 )
 
 const (
-	mainWindowClass = "velix-main"
+	mainWindowClass = "sth-main"
 	wmAppDispatch   = wmApp + 2
 	trayIconID      = 1
 
@@ -129,7 +129,7 @@ func newMainUI(d *drover, flags appFlags) (*mainUI, error) {
 	}
 
 	// The window is hidden; an empty title keeps screen readers from
-	// announcing "Velix" when the tray menu takes the foreground.
+	// announcing the product name when the tray menu takes the foreground.
 	hwnd := createWindowEx(0, mainWindowClass, "", wsPopup, 0, 0, 0, 0, 0, 0, hInstance, 0)
 	if hwnd == 0 {
 		return nil, errors.New("Failed to create main window.")
@@ -278,10 +278,10 @@ func (u *mainUI) cleanup() {
 
 // --- Tray icon -----------------------------------------------------------
 
-// trayTip reports the proxying that is actually in effect, prefixed with the
-// application name so the icon is still identifiable when no mode is on. TUN
-// only counts while the core runs the TUN config, so a failed or pending start
-// never leaves a stale mode on display.
+// trayTip reports the proxying that is actually in effect. The full product
+// name is shown while idle; with an active mode the short name and the modes
+// are shown. TUN only counts while the core runs the TUN config, so a failed or
+// pending start never leaves a stale mode on display.
 func (u *mainUI) trayTip() string {
 	tun := u.isTunActive && u.d != nil && u.d.supervisor.currentState() == csRunning
 
@@ -297,7 +297,7 @@ func (u *mainUI) trayTip() string {
 	if status == "" {
 		return appTitle
 	}
-	return appTitle + ":" + status
+	return appShortName + ":" + status
 }
 
 func (u *mainUI) addTrayIcon() {

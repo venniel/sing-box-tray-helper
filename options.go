@@ -9,8 +9,8 @@ import (
 )
 
 const (
-	optionsFilename = "velix.ini"
-	optionsSection  = "velix"
+	optionsFilename = "sth.ini"
+	optionsSection  = "sth"
 )
 
 type tunStartMode int

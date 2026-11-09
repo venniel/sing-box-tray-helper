@@ -1,4 +1,4 @@
-# Velix
+# sing-box tray helper
 
 A lightweight tray controller for Windows that runs the official `sing-box` core in the background and exposes a
 small, native control surface: system proxy, TUN mode, Clash mode switching, selector switching and a link to the
@@ -47,12 +47,12 @@ becoming another all-in-one GUI client.
 1. Build the program (there are no prebuilt binaries):
 
    ```sh
-   go build -ldflags "-H=windowsgui" -trimpath -o Velix.exe .
+   go build -ldflags "-H=windowsgui" -trimpath -o STH.exe .
    ```
 
-2. Put `Velix.exe` in any folder. The settings dialog creates `velix.ini` when you save for the first time.
-3. Put `sing-box.exe` next to `Velix.exe`, or point `sb-exe` at the executable's full path.
-4. Run `Velix.exe`. On the first launch the settings dialog opens; choose the core executable and the config
+2. Put `STH.exe` in any folder. The settings dialog creates `sth.ini` when you save for the first time.
+3. Put `sing-box.exe` next to `STH.exe`, or point `sb-exe` at the executable's full path.
+4. Run `STH.exe`. On the first launch the settings dialog opens; choose the core executable and the config
    file. After saving, a tray icon appears and the core starts.
 
 The tray menu and the settings dialog are in Chinese.
@@ -151,10 +151,10 @@ If the core reports a `mode-list`, the **模式** menu is shown. Selecting a mod
 
 ## Program configuration
 
-Settings are stored in `velix.ini` next to the executable:
+Settings are stored in `sth.ini` next to the executable:
 
 ```ini
-[velix]
+[sth]
 ; Full path to sing-box.exe. Empty means the program folder.
 sb-exe =
 sb-config-file = config.json
@@ -163,12 +163,12 @@ system-proxy-auto = 0
 ; Selector menu layout: "auto", "flat" or "nested"
 selector-menu-layout = auto
 ; Optional: write a log file (relative paths are resolved against the program folder)
-; log-file = velix.log
+; log-file = sth.log
 ```
 
 | Key | Description |
 | --- | --- |
-| `sb-exe` | Full path to the sing-box executable. A relative name is resolved against the program folder; empty means `sing-box.exe` next to `Velix.exe`. |
+| `sb-exe` | Full path to the sing-box executable. A relative name is resolved against the program folder; empty means `sing-box.exe` next to `STH.exe`. |
 | `sb-config-file` | sing-box config file (JSON). A relative name is resolved against the program folder first, then the core's folder. |
 | `tun-start-mode` | TUN switch state: `on` or `off` (default). Updated by the app whenever TUN is toggled. |
 | `system-proxy-auto` | System proxy switch state: `1` enabled, `0` disabled (default). Updated by the app whenever the proxy is toggled. |
@@ -188,18 +188,13 @@ Selector choices are not stored by this program. Whether they survive a restart 
 `experimental.cache_file.enabled`, sing-box restores the last selection itself; without it, selectors start from the
 config `default`.
 
-The TUN and system proxy switches are remembered in `velix.ini`. Older builds kept them in
-`sing-box-go.state.json`; that file is no longer read and can be deleted.
-
-Builds before the rename used `sing-box-go.ini` with a `[sing-box-go]` section. Rename the file to `velix.ini` and
-change the section header to `[velix]` to keep the old settings.
+The TUN and system proxy switches are remembered in `sth.ini`.
 
 ### Autostart
 
-Autostart is implemented as a scheduled task named `Velix` that runs the current executable at logon with the
+Autostart is implemented as a scheduled task named `STH` that runs the current executable at logon with the
 highest available privileges. Enabling or disabling it may prompt for UAC. If the executable is moved, re-enable
-autostart so the task points at the new path. Builds before the rename registered a task named `sing-box-go`; delete
-it with `schtasks /Delete /TN sing-box-go /F` if it still exists, then re-enable autostart in Velix.
+autostart so the task points at the new path.
 
 ## Command-line switches
 
@@ -220,19 +215,19 @@ Requirements:
 - `golang.org/x/sys` (resolved by `go mod download`)
 
 ```sh
-go build -ldflags "-H=windowsgui" -trimpath -o Velix.exe .
+go build -ldflags "-H=windowsgui" -trimpath -o STH.exe .
 go test .
 ```
 
 `-H=windowsgui` suppresses the console window. The UI is written directly against Win32 (GDI/user32/shell32), so the
 executable has no runtime dependencies beyond the standard Windows system libraries.
 
-The Windows version resource and application icon are checked in as `velix_windows_amd64.syso`, generated from
-`versioninfo.json` and `assets/velix.ico` (master `assets/velix.png`) with goversioninfo; regenerate it only when the
+The Windows version resource and application icon are checked in as `sth_windows_amd64.syso`, generated from
+`versioninfo.json` and `assets/sth.ico` (master `assets/sth.png`) with goversioninfo; regenerate it only when the
 metadata or icon changes:
 
 ```sh
-go run github.com/josephspurrier/goversioninfo/cmd/goversioninfo@latest -64 -icon assets/velix.ico -o velix_windows_amd64.syso versioninfo.json
+go run github.com/josephspurrier/goversioninfo/cmd/goversioninfo@latest -64 -icon assets/sth.ico -o sth_windows_amd64.syso versioninfo.json
 ```
 
 ### Source layout
@@ -250,7 +245,7 @@ go run github.com/josephspurrier/goversioninfo/cmd/goversioninfo@latest -64 -ico
 | `options.go` | INI options, including the remembered TUN and system proxy switches |
 | `autostart.go`, `elevation.go`, `singleinstance.go` | Windows integration helpers |
 | `systemproxy.go`, `tuncleanup.go`, `logger.go` | System proxy, Wintun cleanup, logging |
-| `assets/velix.ico`, `assets/velix.png` | Executable and tray icon, the 512px PNG master, per-size `assets/velix-*.png` exports and the `assets/velix.svg` vector source |
+| `assets/sth.ico`, `assets/sth.png` | Executable and tray icon, the 512px PNG master, per-size `assets/sth-*.png` exports and the `assets/sth.svg` vector source |
 
 ## Limitations
 

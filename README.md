@@ -44,7 +44,7 @@ becoming another all-in-one GUI client.
 
 ## Getting started
 
-1. Build the program (there are no prebuilt binaries):
+1. Download `STH.exe` from the [latest release](../../releases/latest), or build it yourself:
 
    ```sh
    go build -ldflags "-H=windowsgui" -trimpath -o STH.exe .

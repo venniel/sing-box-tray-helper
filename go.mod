@@ -1,4 +1,4 @@
-module sing-box-go
+module sing-box-tray-helper
 
 go 1.26.0
 

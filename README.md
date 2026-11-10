@@ -1,75 +1,63 @@
-# sing-box tray helper
+# sing-box 托盘助手
 
-A lightweight tray controller for Windows that runs the official `sing-box` core in the background and exposes a
-small, native control surface: system proxy, TUN mode, Clash mode switching, selector switching and a link to the
-Clash dashboard.
+本项目基于 [sing-box-drover](https://github.com/hdrover/sing-box-drover) 二次修改（fork），在此感谢原作者的工作。
 
-The goal is to keep the full power of a normal sing-box config while adding only the Windows-specific glue, without
-becoming another all-in-one GUI client.
+一个轻量级 Windows 托盘控制器：在后台运行官方 `sing-box` 核心，只提供一小块原生控制面——系统代理、TUN 模式、Clash 模式与节点切换、面板入口。目标是保留普通 sing-box 配置的全部能力，只补上 Windows 侧的胶水，而不是做成又一个一体化 GUI 客户端。
 
-- Uses the official `sing-box.exe` — nothing is embedded, nothing is bundled
-- One JSON config, used as-is
-- Native Win32 controls (no GUI toolkit) with explicit accessible names, so screen readers such as NVDA and
-  争渡读屏 can navigate the tray menu and settings dialog
-- Small idle footprint: no periodic HTTP polling after startup; the Clash API is contacted at startup, when the
-  menu is opened and when you switch something
+- 直接使用官方 `sing-box.exe`，不内嵌、不打包
+- 一份 JSON 配置，原样使用
+- 原生 Win32 控件（不依赖 GUI 工具包），托盘菜单与设置对话框带有明确的无障碍名称，NVDA、争渡读屏等读屏软件可直接导航
+- 空闲开销小：启动后不做周期性 HTTP 轮询，只在启动、打开菜单和切换时访问 Clash API
 
-## Features
+## 功能
 
-- Tray icon reflects the current state: TUN active, system proxy enabled, or idle
-- Left-click the tray icon to open the settings dialog
-- Right-click for the context menu:
-    - **更多** (More) — restart, autostart, project page
-    - **模式** (Mode) — Clash mode switcher, populated from the Clash API
-    - **节点** (Nodes) — selector outbounds; the outbound currently used by the core is marked, even when it was
-      changed from outside this program (for example from the dashboard). The program never pushes a selection to
-      the core at startup; persistence is left to the core (see below).
-    - **TUN 模式** (TUN mode) — available when the config contains a `tun` inbound; asks for elevation when needed
-    - **系统代理** (System proxy) — toggles the Windows proxy settings
-    - **面板** (Dashboard) — opens the dashboard served by the core when `external_ui` is configured, otherwise the
-      hosted yacd panel
-    - **退出** (Quit) — gracefully stops the core and exits
-- The system proxy is restored on the next launch when it was left enabled, and is disabled on normal exit
-- TUN state is remembered across restarts; enabling TUN relaunches the program elevated (UAC)
-- Single instance per user session; starting a second copy is refused
-- Optional autostart through a scheduled task
+- 托盘图标反映当前状态：TUN 已启用、系统代理已启用或空闲
+- 左键单击托盘图标打开设置对话框；右键打开菜单：
+  - **更多**：重启、开机自启、项目主页
+  - **模式**：Clash 模式切换，列表来自 Clash API
+  - **节点**：selector 出站。核心当前实际使用的出站会被标记，即使是在面板里从外部切换的；程序启动时不会向核心推送选择，持久化交给核心
+  - **TUN 模式**：配置中有 `tun` 入站时可用，需要时请求提权
+  - **系统代理**：切换 Windows 代理设置
+  - **面板**：配置了 `external_ui` 时打开核心提供的面板，否则打开在线 yacd
+  - **退出**：优雅停止核心并退出
+- 若上次退出前系统代理仍开启，下次启动时恢复；正常退出时关闭
+- TUN 状态跨重启记忆；开启 TUN 会以管理员权限重新启动（UAC）
+- 每个用户会话只允许一个实例，重复启动会被拒绝
+- 可选：通过计划任务实现开机自启
 
-## Requirements
+## 环境要求
 
-- Windows 10 or later (64-bit)
-- The official `sing-box` for Windows (`sing-box.exe`), downloaded from the upstream project:
-  <https://github.com/SagerNet/sing-box/releases>
-- For TUN mode, the `wintun.dll` that ships with the official Windows archive must be next to `sing-box.exe`
-- A sing-box config that satisfies the requirements below
+- Windows 10 或更高版本（64 位）
+- 官方 `sing-box.exe`（Windows 版），上游下载地址：<https://github.com/SagerNet/sing-box/releases>
+- TUN 模式需要官方 Windows 包内的 `wintun.dll`，与 `sing-box.exe` 放在一起
+- 一份满足下列要求的 sing-box 配置
 
-## Getting started
+## 快速开始
 
-1. Download `STH.exe` from the [latest release](../../releases/latest), or build it yourself:
+1. 获取 `STH.exe`：从 [latest release](../../releases/latest) 下载，或自行编译：
 
    ```sh
    go build -ldflags "-H=windowsgui" -trimpath -o STH.exe .
    ```
 
-2. Put `STH.exe` in any folder. The settings dialog creates `sth.ini` when you save for the first time.
-3. Put `sing-box.exe` next to `STH.exe`, or point `sb-exe` at the executable's full path.
-4. Run `STH.exe`. On the first launch the settings dialog opens; choose the core executable and the config
-   file. After saving, a tray icon appears and the core starts.
+2. 将 `STH.exe` 放在任意目录。首次保存设置时会生成 `sth.ini`。
+3. 将 `sing-box.exe` 放在 `STH.exe` 同级，或用 `sb-exe` 指向其完整路径。
+4. 运行 `STH.exe`。首次启动会打开设置对话框，选择核心和配置文件；保存后出现托盘图标并启动核心。
 
-The tray menu and the settings dialog are in Chinese.
+托盘菜单与设置对话框为中文。
 
-## sing-box configuration requirements
+## sing-box 配置要求
 
-### Required: mixed inbound
+### 必需：mixed 入站
 
-The program always needs a `mixed` inbound: it reads `listen` and `listen_port` to configure the Windows system proxy
-and refuses to start without one.
+程序依赖 `mixed` 入站：读取其中的 `listen` 与 `listen_port` 来配置 Windows 系统代理，缺少时拒绝启动。
 
 ```jsonc
 {
   "inbounds": [
     {
       "type": "mixed",
-      "tag": "mixed-in", // any tag, not used by the program
+      "tag": "mixed-in", // 名称任意，程序不使用
       "listen": "127.0.0.1",
       "listen_port": 1080
     }
@@ -77,9 +65,9 @@ and refuses to start without one.
 }
 ```
 
-### Optional: tun inbound
+### 可选：tun 入站
 
-If the config contains an inbound of type `tun`, the TUN menu item appears. Without it, TUN mode is unavailable.
+配置中存在 `type` 为 `tun` 的入站时，菜单里才会出现 TUN 项。
 
 ```jsonc
 {
@@ -94,12 +82,11 @@ If the config contains an inbound of type `tun`, the TUN menu item appears. With
 }
 ```
 
-When TUN is disabled, the program starts the core with the `tun` inbounds removed from the in-memory config; the file
-on disk is never modified.
+关闭 TUN 时，程序先从内存中的配置里移除 `tun` 入站再启动核心；磁盘上的配置文件始终不被修改。
 
-### Required for node/mode switching: Clash API
+### 节点/模式切换与面板：Clash API
 
-Node switching, mode switching and the dashboard link use the Clash API:
+节点切换、模式切换和面板链接都依赖 Clash API：
 
 ```jsonc
 {
@@ -107,26 +94,21 @@ Node switching, mode switching and the dashboard link use the Clash API:
     "clash_api": {
       "external_controller": "127.0.0.1:9090",
       "secret": "change-me",
-      "external_ui": "ui" // optional; an http(s) URL is used as-is
+      "external_ui": "ui" // 可选；也可直接写 http(s):// 地址
     }
   }
 }
 ```
 
-- `external_controller` — API address. `0.0.0.0` is rewritten to `127.0.0.1` for the dashboard link.
-- `secret` — API token. It is appended to the dashboard URL automatically.
-- `external_ui` — optional. When set, the dashboard the core serves at `http://<controller>/ui/` is opened (an
-  absolute `http(s)://` value is opened as-is). When absent, the hosted panel at
-  <https://venniel.github.io/Yacd-meta> is opened.
+- `external_controller`：API 地址。生成面板链接时，`0.0.0.0` 会被改写为 `127.0.0.1`。
+- `secret`：API 令牌，会自动附加到面板链接。
+- `external_ui`：可选。设置后打开核心在 `http://<controller>/ui/` 提供的面板（绝对 `http(s)://` 地址按原样打开）；未设置时打开在线面板 <https://venniel.github.io/Yacd-meta>。
 
-If the config contains selectors but no `clash_api` section, the program adds one in memory with
-`external_controller = "127.0.0.1:9090"` and a generated secret. This works for the current run only; the config file is
-not rewritten.
+配置中有 selector 但没有 `clash_api` 时，程序会在内存中补一个：`external_controller = "127.0.0.1:9090"` 并生成随机 `secret`。仅对当次运行有效，不会写回配置文件。
 
-### Optional: selectors for node switching
+### 可选：用于节点切换的 selector
 
-Selectors are shown in the **节点** menu. The selector `tag` is the submenu title, its `outbounds` are the items, and
-`default` is the initial choice.
+selector 出现在 **节点** 菜单中：`tag` 是子菜单标题，`outbounds` 是菜单项，`default` 是初始选项。
 
 ```jsonc
 {
@@ -142,116 +124,105 @@ Selectors are shown in the **节点** menu. The selector `tag` is the submenu ti
 }
 ```
 
-Switching an item sends `PUT /proxies/<tag>` to the Clash API and then closes existing connections, so the change
-applies immediately.
+切换时程序向 Clash API 发送 `PUT /proxies/<tag>`，随后关闭已有连接，使改动立即生效。
 
-### Optional: Clash modes
+### 可选：Clash 模式
 
-If the core reports a `mode-list`, the **模式** menu is shown. Selecting a mode sends `PATCH /configs` to the Clash API.
+核心上报 `mode-list` 时显示 **模式** 菜单，选择后向 Clash API 发送 `PATCH /configs`。
 
-## Program configuration
+## 程序配置
 
-Settings are stored in `sth.ini` next to the executable:
+设置保存在可执行文件同目录的 `sth.ini`：
 
 ```ini
 [sth]
-; Full path to sing-box.exe. Empty means the program folder.
+; sing-box.exe 的完整路径。留空表示程序所在目录。
 sb-exe =
 sb-config-file = config.json
 tun-start-mode = off
 system-proxy-auto = 0
-; Selector menu layout: "auto", "flat" or "nested"
+; 节点菜单布局：auto、flat 或 nested
 selector-menu-layout = auto
-; Optional: write a log file (relative paths are resolved against the program folder)
+; 可选：写日志文件（相对路径相对于程序目录）
 ; log-file = sth.log
 ```
 
-| Key | Description |
+| 键 | 说明 |
 | --- | --- |
-| `sb-exe` | Full path to the sing-box executable. A relative name is resolved against the program folder; empty means `sing-box.exe` next to `STH.exe`. |
-| `sb-config-file` | sing-box config file (JSON). A relative name is resolved against the program folder first, then the core's folder. |
-| `tun-start-mode` | TUN switch state: `on` or `off` (default). Updated by the app whenever TUN is toggled. |
-| `system-proxy-auto` | System proxy switch state: `1` enabled, `0` disabled (default). Updated by the app whenever the proxy is toggled. |
-| `selector-menu-layout` | Node menu layout: `auto` decides by item count, `flat` shows each selector as a disabled header with checkable items below, `nested` uses submenus. |
-| `log-file` | Optional log file path. Relative paths are resolved against the program folder. Empty disables logging. |
+| `sb-exe` | `sing-box` 可执行文件的完整路径。相对名称按程序目录解析；留空表示与 `STH.exe` 同级的 `sing-box.exe`。 |
+| `sb-config-file` | sing-box 配置文件（JSON）。相对名称先按程序目录解析，再按核心目录解析。 |
+| `tun-start-mode` | TUN 开关状态：`on` 或 `off`（默认）。切换 TUN 时由程序更新。 |
+| `system-proxy-auto` | 系统代理开关状态：`1` 启用，`0` 禁用（默认）。切换代理时由程序更新。 |
+| `selector-menu-layout` | 节点菜单布局：`auto` 按条目数量决定，`flat` 每个 selector 作为不可点击的标题并列出可勾选项，`nested` 使用子菜单。 |
+| `log-file` | 可选的日志文件路径，相对路径按程序目录解析；留空则不写日志。 |
 
-Older versions stored the core folder as `sb-dir`; it is still read when `sb-exe` is absent.
+旧版本用 `sb-dir` 记录核心目录，`sb-exe` 不存在时仍会读取它。
 
-The settings dialog edits `sb-exe`, `sb-config-file` and `selector-menu-layout`. Saving a different core executable or
-config file restarts the program automatically.
+设置对话框可修改 `sb-exe`、`sb-config-file` 和 `selector-menu-layout`；保存后若核心或配置文件发生变化，程序会自动重启。
 
-sing-box runs with `<core folder>\config` as its working directory (created automatically). Relative paths from the
-config, including `cache.db` and `external_ui`, therefore resolve inside that folder — for example put the dashboard
-files in `<core folder>\config\ui` when the config uses `"external_ui": "ui"`.
+核心的工作目录为 `<核心目录>\config`（自动创建），配置中的相对路径（包括 `cache.db` 和 `external_ui`）都相对于它解析——例如配置写 `"external_ui": "ui"` 时，面板文件应放在 `<核心目录>\config\ui`。
 
-Selector choices are not stored by this program. Whether they survive a restart is decided by the core: with
-`experimental.cache_file.enabled`, sing-box restores the last selection itself; without it, selectors start from the
-config `default`.
+节点选择不由本程序保存，能否跨重启保留取决于核心：启用 `experimental.cache_file.enabled` 时由 sing-box 自行恢复，否则从配置中的 `default` 开始。
 
-The TUN and system proxy switches are remembered in `sth.ini`.
+TUN 与系统代理的开关状态记录在 `sth.ini` 中。
 
-### Autostart
+### 开机自启
 
-Autostart is implemented as a scheduled task named `STH` that runs the current executable at logon with the
-highest available privileges. Enabling or disabling it may prompt for UAC. If the executable is moved, re-enable
-autostart so the task points at the new path.
+自启由名为 `STH` 的计划任务实现：登录时以最高可用权限运行当前可执行文件，启用或关闭时可能弹出 UAC。移动可执行文件后需要重新启用自启，以更新任务中的路径。
 
-## Command-line switches
+## 命令行开关
 
-These are mainly used internally when the program relaunches itself, but they can also be passed manually:
+主要用于程序自我重启，也可手动传入：
 
-| Switch | Effect |
+| 开关 | 作用 |
 | --- | --- |
-| `-tun` | Start with TUN enabled (requests elevation if needed). |
-| `-restart` | Wait for an already running instance to exit before starting. |
-| `-autostart-enable` | Create the autostart scheduled task. |
-| `-autostart-disable` | Remove the autostart scheduled task. |
+| `-tun` | 以启用 TUN 的方式启动（必要时请求提权）。 |
+| `-restart` | 等待已运行的实例退出后再启动。 |
+| `-autostart-enable` | 创建自启计划任务。 |
+| `-autostart-disable` | 删除自启计划任务。 |
 
-## Building and testing
+## 构建与测试
 
-Requirements:
+要求：
 
-- Go 1.26 or newer
-- `golang.org/x/sys` (resolved by `go mod download`)
+- Go 1.26 或更高版本
+- `golang.org/x/sys`（由 `go mod download` 解析）
 
 ```sh
 go build -ldflags "-H=windowsgui" -trimpath -o STH.exe .
 go test .
 ```
 
-`-H=windowsgui` suppresses the console window. The UI is written directly against Win32 (GDI/user32/shell32), so the
-executable has no runtime dependencies beyond the standard Windows system libraries.
+`-H=windowsgui` 用于隐藏控制台窗口。界面直接基于 Win32（GDI/user32/shell32）实现，运行时除 Windows 系统库外没有其他依赖。
 
-The Windows version resource and application icon are checked in as `sth_windows_amd64.syso`, generated from
-`versioninfo.json` and `assets/sth.ico` (master `assets/sth.png`) with goversioninfo; regenerate it only when the
-metadata or icon changes:
+Windows 版本资源与应用图标以 `sth_windows_amd64.syso` 的形式入库，由 `versioninfo.json` 和 `assets/sth.ico`（母版为 `assets/sth.png`）经 goversioninfo 生成。仅在元数据或图标变化时需要重新生成：
 
 ```sh
 go run github.com/josephspurrier/goversioninfo/cmd/goversioninfo@latest -64 -icon assets/sth.ico -o sth_windows_amd64.syso versioninfo.json
 ```
 
-### Source layout
+每次推送到仓库都会由 GitHub Actions 交叉编译 Windows x64 版本，并更新唯一的 `latest` release；也可以直接从 [latest release](../../releases/latest) 下载。
 
-| File | Purpose |
+## 源码结构
+
+| 文件 | 作用 |
 | --- | --- |
-| `main.go` | Startup, single instance, DPI/COM initialization, first-run settings, elevation |
-| `ui.go` | Tray icon, context menu, system proxy and TUN actions, autostart, shutdown |
-| `settings.go` | Win32 settings dialog and file/folder pickers |
-| `win32.go` | Win32 bindings, structs, accessibility names, small helpers |
-| `drover.go` | Application state, selector/mode state, remembered TUN/proxy switches, shutdown |
-| `supervisor.go` | Core process supervision (job object, stdin config, Clash API checks) |
-| `apiclient.go` | Minimal Clash API client |
-| `config.go` | Config parsing, requirement checks, in-memory TUN stripping, Clash API creation |
-| `options.go` | INI options, including the remembered TUN and system proxy switches |
-| `autostart.go`, `elevation.go`, `singleinstance.go` | Windows integration helpers |
-| `systemproxy.go`, `tuncleanup.go`, `logger.go` | System proxy, Wintun cleanup, logging |
-| `assets/sth.ico`, `assets/sth.png` | Executable and tray icon, the 512px PNG master, per-size `assets/sth-*.png` exports and the `assets/sth.svg` vector source |
+| `main.go` | 启动、单实例、DPI/COM 初始化、首次运行设置、提权 |
+| `ui.go` | 托盘图标、右键菜单、系统代理与 TUN 操作、自启、退出 |
+| `settings.go` | Win32 设置对话框与文件/目录选择器 |
+| `win32.go` | Win32 绑定、结构体、无障碍名称与辅助函数 |
+| `drover.go` | 应用状态、节点/模式状态、TUN 与代理开关记忆、退出 |
+| `supervisor.go` | 核心进程管理（Job 对象、stdin 配置、Clash API 检查） |
+| `apiclient.go` | 精简的 Clash API 客户端 |
+| `config.go` | 配置解析、要求检查、内存中移除 TUN、生成 Clash API |
+| `options.go` | INI 选项，含 TUN 与系统代理的开关记忆 |
+| `autostart.go`、`elevation.go`、`singleinstance.go` | Windows 集成辅助 |
+| `systemproxy.go`、`tuncleanup.go`、`logger.go` | 系统代理、Wintun 清理、日志 |
+| `assets/sth.ico`、`assets/sth.png` | 可执行文件与托盘图标；`assets/sth.png` 为 512px 母版，`assets/sth-*.png` 为各尺寸导出，`assets/sth.svg` 为矢量源文件 |
 
-## Limitations
+## 已知限制
 
-- Only one config file at a time; there is no profile switching in the UI.
-- Selector choices are not remembered by the program; enable `experimental.cache_file` in the sing-box config if you
-  want them restored after a restart.
-- TUN mode requires an elevated process and a `tun` inbound.
-- The program does not modify the sing-box config file; in-memory changes (TUN removal, generated Clash API) are
-  per-run only.
+- 一次只能使用一份配置文件，界面没有配置切换功能。
+- 程序不记忆节点选择；需要重启后保留时，请在 sing-box 配置中启用 `experimental.cache_file`。
+- TUN 模式需要提权，且配置中必须有 `tun` 入站。
+- 程序不修改 sing-box 配置文件；内存中的改动（移除 TUN、生成 Clash API）仅在当次运行有效。

@@ -37,7 +37,7 @@
 1. 获取 `STH.exe`：从 [latest release](../../releases/latest) 下载，或自行编译：
 
    ```sh
-   go build -ldflags "-H=windowsgui" -trimpath -o STH.exe .
+   go build -ldflags "-H=windowsgui -s -w" -trimpath -o STH.exe .
    ```
 
 2. 将 `STH.exe` 放在任意目录。首次保存设置时会生成 `sth.ini`。
@@ -189,11 +189,11 @@ TUN 与系统代理的开关状态记录在 `sth.ini` 中。
 - `golang.org/x/sys`（由 `go mod download` 解析）
 
 ```sh
-go build -ldflags "-H=windowsgui" -trimpath -o STH.exe .
+go build -ldflags "-H=windowsgui -s -w" -trimpath -o STH.exe .
 go test .
 ```
 
-`-H=windowsgui` 用于隐藏控制台窗口。界面直接基于 Win32（GDI/user32/shell32）实现，运行时除 Windows 系统库外没有其他依赖。
+`-H=windowsgui` 用于隐藏控制台窗口，`-s -w` 去掉符号表和调试信息以减小体积。界面直接基于 Win32（GDI/user32/shell32）实现，运行时除 Windows 系统库外没有其他依赖。
 
 Windows 版本资源与应用图标以 `sth_windows_amd64.syso` 的形式入库，由 `versioninfo.json` 和 `assets/sth.ico`（母版为 `assets/sth.png`）经 goversioninfo 生成。仅在元数据或图标变化时需要重新生成：
 

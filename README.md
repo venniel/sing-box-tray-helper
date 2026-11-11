@@ -208,7 +208,8 @@ go run github.com/josephspurrier/goversioninfo/cmd/goversioninfo@latest -64 -ico
 | 文件 | 作用 |
 | --- | --- |
 | `main.go` | 启动、单实例、DPI/COM 初始化、首次运行设置、提权 |
-| `ui.go` | 托盘图标、右键菜单、系统代理与 TUN 操作、自启、退出 |
+| `ui.go` | 主窗口与消息循环、托盘图标、系统代理与 TUN 操作、自启、退出 |
+| `menu.go` | 右键菜单构建与菜单命令分发 |
 | `settings.go` | Win32 设置对话框与文件/目录选择器 |
 | `win32.go` | Win32 绑定、结构体、无障碍名称与辅助函数 |
 | `controller.go` | 应用状态、节点/模式状态、TUN 与代理开关记忆、退出 |

@@ -61,6 +61,10 @@ func main() {
 		}
 	}
 
+	// Start the core only after the elevation decision so a relaunch does not
+	// spawn a throwaway instance first.
+	d.startCore(d.wantsTun)
+
 	ui, err := newMainUI(d, flags)
 	if err != nil {
 		messageBox(err.Error(), appTitle, mbIconError)

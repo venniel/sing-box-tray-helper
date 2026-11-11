@@ -89,7 +89,6 @@ func newDrover(flags appFlags) (*drover, error) {
 	}
 
 	d.supervisor = newCoreSupervisor(corePath, d.logger, cfg.ClashAPI, d.dispatchCoreEvent)
-	d.startCore(d.canUseTun() && d.wantsTun)
 
 	return d, nil
 }

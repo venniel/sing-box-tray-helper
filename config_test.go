@@ -134,6 +134,28 @@ func TestReadSingBoxConfigCaseInsensitiveTypes(t *testing.T) {
 	}
 }
 
+func TestNormalizeJSON(t *testing.T) {
+	input := `{
+  // line comment
+  "a": "http://example.com//x", /* block
+  comment */
+  "b": [1, 2,],
+  "c": {"d": "quote\" inside",},
+}`
+	want := `{"a":"http://example.com//x","b":[1,2],"c":{"d":"quote\" inside"}}`
+	if got := normalizeJSON(input); got != want {
+		t.Errorf("normalizeJSON = %q, want %q", got, want)
+	}
+}
+
+func TestNormalizeJSONEmptyContainers(t *testing.T) {
+	input := "{\r\n\t\"a\": [ ],\r\n\t\"b\": { },\r\n}"
+	want := `{"a":[],"b":{}}`
+	if got := normalizeJSON(input); got != want {
+		t.Errorf("normalizeJSON = %q, want %q", got, want)
+	}
+}
+
 func TestClashAPIDashboardURL(t *testing.T) {
 	online := "https://venniel.github.io/Yacd-meta"
 

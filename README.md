@@ -211,7 +211,7 @@ go run github.com/josephspurrier/goversioninfo/cmd/goversioninfo@latest -64 -ico
 | `ui.go` | 托盘图标、右键菜单、系统代理与 TUN 操作、自启、退出 |
 | `settings.go` | Win32 设置对话框与文件/目录选择器 |
 | `win32.go` | Win32 绑定、结构体、无障碍名称与辅助函数 |
-| `drover.go` | 应用状态、节点/模式状态、TUN 与代理开关记忆、退出 |
+| `controller.go` | 应用状态、节点/模式状态、TUN 与代理开关记忆、退出 |
 | `supervisor.go` | 核心进程管理（Job 对象、stdin 配置、Clash API 检查） |
 | `apiclient.go` | 精简的 Clash API 客户端 |
 | `config.go` | 配置解析、要求检查、内存中移除 TUN、生成 Clash API |

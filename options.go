@@ -28,7 +28,7 @@ const (
 	smlNested
 )
 
-type droverOptions struct {
+type appOptions struct {
 	SBExe              string
 	SBConfigFile       string
 	SystemProxyAuto    bool
@@ -37,9 +37,9 @@ type droverOptions struct {
 	LogFile            string
 }
 
-func loadOptions(filename string) droverOptions {
+func loadOptions(filename string) appOptions {
 	currentDir := filepath.Dir(filename) + string(os.PathSeparator)
-	opts := droverOptions{
+	opts := appOptions{
 		SBExe:              currentDir + "sing-box.exe",
 		SBConfigFile:       "config.json",
 		SystemProxyAuto:    false,

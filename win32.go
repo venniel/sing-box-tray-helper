@@ -10,26 +10,26 @@ import (
 )
 
 const (
-	wmDestroy          = 0x0002
-	wmClose            = 0x0010
-	wmQueryEndSession  = 0x0011
-	wmEndSession       = 0x0016
-	wmSetFont          = 0x0030
-	wmCommand          = 0x0111
-	wmContextMenu      = 0x007B
-	wmNcDestroy        = 0x0082
-	wmLeftButtonUp     = 0x0202
-	wmRightButtonUp    = 0x0205
-	wmApp              = 0x8000
-	wmNull             = 0x0000
-	wmDpiChanged       = 0x02E0
-	wmAppTray          = wmApp + 1
-	wmDroverCanClose   = wmApp + 501
-	eventSystemAlert   = 0x0002
-	eventObjectShow    = 0x8002
-	eventObjectNameChg = 0x800C
-	objIDClient        = 0xFFFFFFFC
-	childIDSelf        = 0
+	wmDestroy            = 0x0002
+	wmClose              = 0x0010
+	wmQueryEndSession    = 0x0011
+	wmEndSession         = 0x0016
+	wmSetFont            = 0x0030
+	wmCommand            = 0x0111
+	wmContextMenu        = 0x007B
+	wmNcDestroy          = 0x0082
+	wmLeftButtonUp       = 0x0202
+	wmRightButtonUp      = 0x0205
+	wmApp                = 0x8000
+	wmNull               = 0x0000
+	wmDpiChanged         = 0x02E0
+	wmAppTray            = wmApp + 1
+	wmControllerCanClose = wmApp + 501
+	eventSystemAlert     = 0x0002
+	eventObjectShow      = 0x8002
+	eventObjectNameChg   = 0x800C
+	objIDClient          = 0xFFFFFFFC
+	childIDSelf          = 0
 )
 
 const (

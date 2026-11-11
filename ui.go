@@ -40,7 +40,7 @@ type selectorAction struct {
 }
 
 type mainUI struct {
-	d            *drover
+	c            *controller
 	hwnd         uintptr
 	startupFlags appFlags
 
@@ -83,9 +83,9 @@ func mainWndProcFunc(hwnd, msg, wparam, lparam uintptr) uintptr {
 	return r
 }
 
-func newMainUI(d *drover, flags appFlags) (*mainUI, error) {
+func newMainUI(c *controller, flags appFlags) (*mainUI, error) {
 	u := &mainUI{
-		d:            d,
+		c:            c,
 		startupFlags: flags,
 		tunBusy:      true,
 		pending:      map[int]selectorAction{},
@@ -147,18 +147,18 @@ func newMainUI(d *drover, flags appFlags) (*mainUI, error) {
 	return u, nil
 }
 
-func (u *mainUI) initDrover() {
-	u.d.setNotifyHandle(u.hwnd)
-	u.isTunActive = u.d.isTunActive
+func (u *mainUI) initController() {
+	u.c.setNotifyHandle(u.hwnd)
+	u.isTunActive = u.c.isTunActive
 
-	if u.d.systemProxyEnabled() {
+	if u.c.systemProxyEnabled() {
 		u.toggleSystemProxy(true, false, false)
 	}
 
 	u.updateTrayIcon()
 	u.addTrayIcon()
 
-	u.d.setOnEvent(u.handleDroverEvent)
+	u.c.setOnEvent(u.handleControllerEvent)
 }
 
 func (u *mainUI) run() {
@@ -229,7 +229,7 @@ func (u *mainUI) handleMessage(hwnd, msg, wparam, lparam uintptr) uintptr {
 		u.handleTray(wparam, lparam)
 		return 0
 
-	case wmDroverCanClose:
+	case wmControllerCanClose:
 		if u.closePending {
 			pEndMenu.Call()
 			postMessage(hwnd, wmClose, 0, 0)
@@ -283,7 +283,7 @@ func (u *mainUI) cleanup() {
 // are shown. TUN only counts while the core runs the TUN config, so a failed or
 // pending start never leaves a stale mode on display.
 func (u *mainUI) trayTip() string {
-	tun := u.isTunActive && u.d != nil && u.d.supervisor.currentState() == csRunning
+	tun := u.isTunActive && u.c != nil && u.c.supervisor.currentState() == csRunning
 
 	status := ""
 	switch {
@@ -403,7 +403,7 @@ func (u *mainUI) handleTray(wparam, lparam uintptr) {
 // --- Menu ----------------------------------------------------------------
 
 func (u *mainUI) showTrayMenu() {
-	u.d.refreshSelectorStates()
+	u.c.refreshSelectorStates()
 
 	hmenu, _ := u.buildMenu()
 	if hmenu == 0 {
@@ -438,7 +438,7 @@ func (u *mainUI) buildMenu() (uintptr, bool) {
 		return menu, true
 	}
 
-	d := u.d
+	ctl := u.c
 
 	extras, _, _ := pCreatePopupMenu.Call()
 	appendMenu(extras, mfString, idMenuRestart, "重启")
@@ -457,7 +457,7 @@ func (u *mainUI) buildMenu() (uintptr, bool) {
 	u.appendModeMenu(menu)
 	u.appendNodeMenu(menu)
 
-	if d.sbConfig.HasTunInbound {
+	if ctl.sbConfig.HasTunInbound {
 		flags := uintptr(mfString)
 		if u.isTunActive {
 			flags |= mfChecked
@@ -481,7 +481,7 @@ func (u *mainUI) buildMenu() (uintptr, bool) {
 }
 
 func (u *mainUI) appendModeMenu(menu uintptr) {
-	modes := u.d.clashModes
+	modes := u.c.clashModes
 	if len(modes) == 0 {
 		return
 	}
@@ -496,7 +496,7 @@ func (u *mainUI) appendModeMenu(menu uintptr) {
 	}
 	for i, mode := range modes {
 		flags := uintptr(mfString)
-		if strings.EqualFold(mode, u.d.clashMode) {
+		if strings.EqualFold(mode, u.c.clashMode) {
 			flags |= mfChecked
 		}
 		appendMenu(sub, flags, uintptr(idMenuModeBase+i), mode)
@@ -505,14 +505,14 @@ func (u *mainUI) appendModeMenu(menu uintptr) {
 }
 
 func (u *mainUI) appendNodeMenu(menu uintptr) {
-	selectors := u.d.selectors
+	selectors := u.c.selectors
 	count := len(selectors)
 	if count < 1 || count > 50 {
 		return
 	}
 
 	isNested := false
-	switch u.d.options.SelectorMenuLayout {
+	switch u.c.options.SelectorMenuLayout {
 	case smlFlat:
 		isNested = false
 	case smlNested:
@@ -548,7 +548,7 @@ func (u *mainUI) appendNodeMenu(menu uintptr) {
 		}
 
 		checkedIndex := selector.DefaultIndex
-		if now, ok := u.d.selectorNow(selector.Name); ok {
+		if now, ok := u.c.selectorNow(selector.Name); ok {
 			for j, outbound := range selector.Outbounds {
 				if outbound == now {
 					checkedIndex = j
@@ -597,7 +597,7 @@ func (u *mainUI) executeMenuCommand(cmd uint32) {
 		shellOpen("https://github.com/sagernet/sing-box")
 		return
 	case idMenuDashboard:
-		shellOpen(u.d.sbConfig.ClashAPI.DashboardURL())
+		shellOpen(u.c.sbConfig.ClashAPI.DashboardURL())
 		return
 	case idMenuQuit:
 		u.requestClose()
@@ -648,12 +648,12 @@ func (u *mainUI) toggleSystemProxy(enable, updateIcon, persist bool) {
 	// Track what Windows actually applied, not what was requested, so the
 	// tooltip and menu never claim a state the system is not in.
 	if enable {
-		u.isSystemProxyActive = u.d.enableSystemProxy()
+		u.isSystemProxyActive = u.c.enableSystemProxy()
 	} else {
-		u.isSystemProxyActive = !u.d.disableSystemProxy()
+		u.isSystemProxyActive = !u.c.disableSystemProxy()
 	}
 	if persist {
-		u.d.storeSystemProxy(enable)
+		u.c.storeSystemProxy(enable)
 	}
 	if updateIcon {
 		u.updateTrayIcon()
@@ -673,7 +673,7 @@ func (u *mainUI) toggleTun(enable bool) {
 	}
 
 	if !isProcessElevated() {
-		u.d.storeTun(enable)
+		u.c.storeTun(enable)
 		flags := appFlags(1<<afTun | 1<<afRestart)
 		if launchSelf(flagsToCmdLine(flags), u.hwnd, true) {
 			u.requestClose()
@@ -685,41 +685,41 @@ func (u *mainUI) toggleTun(enable bool) {
 	// updated from the running state instead of the request.
 	u.toggleTunDisplay(enable, !enable)
 	u.tunBusy = true
-	u.d.storeTun(enable)
-	u.d.startCore(enable)
+	u.c.storeTun(enable)
+	u.c.startCore(enable)
 }
 
 func (u *mainUI) editSelector(action selectorAction) {
 	u.lastRequestID++
 	requestID := u.lastRequestID
 
-	if u.d.editSelector(action.SelectorIndex, action.OutboundIndex, requestID) {
+	if u.c.editSelector(action.SelectorIndex, action.OutboundIndex, requestID) {
 		u.pending[requestID] = action
 	}
 }
 
 func (u *mainUI) selectMode(mode string) {
-	if strings.EqualFold(mode, u.d.clashMode) {
+	if strings.EqualFold(mode, u.c.clashMode) {
 		return
 	}
-	u.d.setClashMode(mode)
+	u.c.setClashMode(mode)
 }
 
-func (u *mainUI) handleDroverEvent(event droverEvent) {
+func (u *mainUI) handleControllerEvent(event controllerEvent) {
 	switch event.Kind {
-	case dekError:
+	case cevError:
 		u.tunBusy = false
 		u.updateTrayIcon()
 		u.showBalloon(event.Msg, "", niifError, 10000)
 
-	case dekRunning:
+	case cevRunning:
 		u.tunBusy = false
-		u.toggleTunDisplay(u.d.isTunActive, true)
+		u.toggleTunDisplay(u.c.isTunActive, true)
 
-	case dekClashModes:
+	case cevClashModes:
 		// The mode submenu is rebuilt on every open.
 
-	case dekCoreEvent:
+	case cevCoreEvent:
 		if event.CoreEvent.Kind == cekSelectorDone {
 			delete(u.pending, event.CoreEvent.RequestID)
 		}
@@ -782,7 +782,7 @@ func (u *mainUI) toggleAutostart() {
 // --- Settings window -----------------------------------------------------
 
 func (u *mainUI) showSettings() {
-	if u.d == nil || u.closePending {
+	if u.c == nil || u.closePending {
 		return
 	}
 	if u.settingsClosed && getTickCount()-u.settingsClosedTick < 400 {
@@ -818,7 +818,7 @@ func (u *mainUI) handleSettingsClosed(settings *settingsDialog) {
 	u.settingsClosed = true
 	u.settingsClosedTick = getTickCount()
 
-	if u.closePending || u.d == nil {
+	if u.closePending || u.c == nil {
 		return
 	}
 	if settings.result != idOK {
@@ -828,7 +828,7 @@ func (u *mainUI) handleSettingsClosed(settings *settingsDialog) {
 		u.restartApp()
 		return
 	}
-	u.d.setSelectorMenuLayout(settings.selectedLayout)
+	u.c.setSelectorMenuLayout(settings.selectedLayout)
 }
 
 func (u *mainUI) closeSettings() {
@@ -845,7 +845,7 @@ func (u *mainUI) closeSettings() {
 
 func (u *mainUI) handleClose() {
 	if u.closePending {
-		if u.d == nil || u.d.shutdown() {
+		if u.c == nil || u.c.shutdown() {
 			pDestroyWindow.Call(u.hwnd)
 		}
 		return
@@ -864,7 +864,7 @@ func (u *mainUI) handleClose() {
 	u.removeTrayIcon()
 	u.startShutdownWatchdog()
 
-	if u.d == nil || u.d.shutdown() {
+	if u.c == nil || u.c.shutdown() {
 		pDestroyWindow.Call(u.hwnd)
 	}
 }
@@ -878,11 +878,11 @@ func (u *mainUI) endSession() {
 		u.toggleSystemProxy(false, false, false)
 	}
 	u.removeTrayIcon()
-	if u.d != nil {
+	if u.c != nil {
 		// Best effort only: blocking here can trigger the "app is preventing
 		// shutdown" prompt. The job object kills the core when this process
 		// goes away.
-		u.d.shutdown()
+		u.c.shutdown()
 	}
 }
 

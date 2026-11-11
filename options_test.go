@@ -37,7 +37,7 @@ func TestLoadOptionsValues(t *testing.T) {
 		"tun-start-mode = on\r\n" +
 		"system-proxy-auto = 1\r\n" +
 		"selector-menu-layout = nested\r\n" +
-		"log-file = drover.log\r\n"
+		"log-file = controller.log\r\n"
 	if err := os.WriteFile(ini, []byte(content), 0o644); err != nil {
 		t.Fatal(err)
 	}
@@ -58,7 +58,7 @@ func TestLoadOptionsValues(t *testing.T) {
 	if opts.SelectorMenuLayout != smlNested {
 		t.Errorf("SelectorMenuLayout = %v, want nested", opts.SelectorMenuLayout)
 	}
-	if opts.LogFile != filepath.Join(dir, "drover.log") {
+	if opts.LogFile != filepath.Join(dir, "controller.log") {
 		t.Errorf("LogFile = %q", opts.LogFile)
 	}
 }

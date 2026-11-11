@@ -32,7 +32,7 @@ func main() {
 	}
 
 	firstRun := !fileExists(programDir() + optionsFilename)
-	var d *drover
+	var c *controller
 
 	for {
 		if firstRun {
@@ -43,7 +43,7 @@ func main() {
 		}
 
 		var err error
-		d, err = newDrover(flags)
+		c, err = newController(flags)
 		if err == nil {
 			break
 		}
@@ -54,29 +54,29 @@ func main() {
 		}
 	}
 
-	if d.needsElevation() {
+	if c.needsElevation() {
 		if launchSelf(flagsToCmdLine(appFlags(1<<afTun|1<<afRestart)), 0, true) {
-			d.destroy()
+			c.destroy()
 			return
 		}
 	}
 
 	// Start the core only after the elevation decision so a relaunch does not
 	// spawn a throwaway instance first.
-	d.startCore(d.wantsTun)
+	c.startCore(c.wantsTun)
 
-	ui, err := newMainUI(d, flags)
+	ui, err := newMainUI(c, flags)
 	if err != nil {
 		messageBox(err.Error(), appTitle, mbIconError)
-		d.destroy()
+		c.destroy()
 		return
 	}
 
-	d.setDispatch(ui.post)
-	ui.initDrover()
+	c.setDispatch(ui.post)
+	ui.initController()
 	ui.run()
 	ui.destroyWindow()
-	d.destroy()
+	c.destroy()
 }
 
 func programDir() string {

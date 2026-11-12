@@ -6,6 +6,7 @@ on:
   workflow_dispatch:
 
 permissions:
+  actions: write
   contents: write
 
 concurrency:
@@ -19,6 +20,18 @@ jobs:
       TAG: latest
       ARTIFACT: STH.exe
     steps:
+      - name: Delete old workflow runs
+        uses: Mattraks/delete-workflow-runs@b3018382ca039b53d238908238bd35d1fb14f8ee # v2.1.0
+        continue-on-error: true
+        with:
+          token: ${{ github.token }}
+          repository: ${{ github.repository }}
+          delete_workflow_pattern: latest.yml
+          # 0 disables the age threshold. The action skips the in-progress run,
+          # so deleting every completed run leaves exactly the latest record.
+          retain_days: 0
+          keep_minimum_runs: 0
+
       - uses: actions/checkout@v7
 
       - uses: actions/setup-go@v7

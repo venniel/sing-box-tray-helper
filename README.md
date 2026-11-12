@@ -195,10 +195,10 @@ go test .
 
 `-H=windowsgui` 用于隐藏控制台窗口，`-s -w` 去掉符号表和调试信息以减小体积。界面直接基于 Win32（GDI/user32/shell32）实现，运行时除 Windows 系统库外没有其他依赖。
 
-Windows 版本资源与应用图标以 `sth_windows_amd64.syso` 的形式入库，由 `versioninfo.json` 和 `assets/sth.ico`（母版为 `assets/sth.png`）经 goversioninfo 生成。仅在元数据或图标变化时需要重新生成：
+应用图标以 `sth_windows_amd64.syso` 的形式入库，由 `assets/sth.ico`（母版为 `assets/sth.png`）经 rsrc 生成；可执行文件不包含版本资源。仅在图标变化时需要重新生成：
 
 ```sh
-go run github.com/josephspurrier/goversioninfo/cmd/goversioninfo@latest -64 -icon assets/sth.ico -o sth_windows_amd64.syso versioninfo.json
+go run github.com/akavel/rsrc@v0.10.2 -arch amd64 -ico assets/sth.ico -o sth_windows_amd64.syso
 ```
 
 每次推送到仓库都会由 GitHub Actions 交叉编译 Windows x64 版本，并更新唯一的 `latest` release；也可以直接从 [latest release](../../releases/latest) 下载。

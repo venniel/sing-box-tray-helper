@@ -82,7 +82,7 @@ func (u *mainUI) buildMenu() (uintptr, bool) {
 		if u.tunBusy {
 			flags |= mfGrayed
 		}
-		appendMenu(menu, flags, idMenuTun, "TUN 模式")
+		appendMenu(menu, flags, idMenuTun, "虚拟网卡")
 	}
 
 	proxyFlags := uintptr(mfString)

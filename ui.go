@@ -273,9 +273,9 @@ func (u *mainUI) trayTip() string {
 	status := ""
 	switch {
 	case tun && u.isSystemProxyActive:
-		status = "TUN 模式 + 系统代理"
+		status = "虚拟网卡&系统代理"
 	case tun:
-		status = "TUN 模式"
+		status = "虚拟网卡"
 	case u.isSystemProxyActive:
 		status = "系统代理"
 	}

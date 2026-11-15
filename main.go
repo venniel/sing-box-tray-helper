@@ -8,7 +8,7 @@ import (
 
 const (
 	appTitle     = "sing-box tray helper"
-	appShortName = "sing-box"
+	appShortName = "S"
 
 	// Outwait the old instance's graceful core stop (10s budget) plus its
 	// output drain on restart.

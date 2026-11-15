@@ -378,10 +378,12 @@ func (u *mainUI) showBalloon(text, title string, flags uint32, timeout int) {
 
 func (u *mainUI) handleTray(wparam, lparam uintptr) {
 	event := loword(lparam)
+	// NOTIFYICON_VERSION_4 delivers the legacy mouse messages alongside the
+	// semantic notifications; handling both would run every action twice.
 	switch event {
-	case wmContextMenu, wmRightButtonUp:
+	case wmContextMenu:
 		u.showTrayMenu()
-	case ninSelect, ninKeySelect, wmLeftButtonUp:
+	case ninSelect, ninKeySelect:
 		u.toggleProxyMode()
 	case ninBalloonUserClick:
 		u.showSettings()
@@ -464,10 +466,10 @@ func (u *mainUI) toggleProxyMode() {
 	if u.closePending || u.tunBusy {
 		return
 	}
-	// One click or Enter can deliver several tray notifications (NIN_SELECT,
-	// NIN_KEYSELECT, WM_LBUTTONUP); a burst counts as a single toggle.
+	// Screen readers can deliver one Enter as two identical NIN_KEYSELECT
+	// notifications ~16ms apart (measured); coalesce activations in a burst.
 	now := getTickCount()
-	if now-u.lastToggleTick < 500 {
+	if now-u.lastToggleTick < 300 {
 		return
 	}
 	u.lastToggleTick = now

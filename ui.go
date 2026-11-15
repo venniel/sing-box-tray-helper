@@ -38,6 +38,7 @@ type mainUI struct {
 	isSystemProxyActive bool
 	closePending        bool
 	tunBusy             bool
+	lastToggleTick      uint32
 
 	autostartState autostartState
 	autostartBusy  bool
@@ -380,7 +381,9 @@ func (u *mainUI) handleTray(wparam, lparam uintptr) {
 	switch event {
 	case wmContextMenu, wmRightButtonUp:
 		u.showTrayMenu()
-	case ninSelect, ninKeySelect, wmLeftButtonUp, ninBalloonUserClick:
+	case ninSelect, ninKeySelect, wmLeftButtonUp:
+		u.toggleProxyMode()
+	case ninBalloonUserClick:
 		u.showSettings()
 	}
 }
@@ -453,6 +456,33 @@ func (u *mainUI) toggleTun(enable bool) {
 	u.tunBusy = true
 	u.c.storeTun(enable)
 	u.c.startCore(enable)
+}
+
+// toggleProxyMode swaps the active mode on a tray click: TUN gives way to
+// the system proxy and vice versa. From idle the system proxy is enabled.
+func (u *mainUI) toggleProxyMode() {
+	if u.closePending || u.tunBusy {
+		return
+	}
+	// One click or Enter can deliver several tray notifications (NIN_SELECT,
+	// NIN_KEYSELECT, WM_LBUTTONUP); a burst counts as a single toggle.
+	now := getTickCount()
+	if now-u.lastToggleTick < 500 {
+		return
+	}
+	u.lastToggleTick = now
+	switch {
+	case u.isTunActive:
+		u.toggleTun(false)
+		u.toggleSystemProxy(true, true, true)
+	case u.isSystemProxyActive && u.c.sbConfig.HasTunInbound:
+		// Persist the proxy state before toggleTun: it may relaunch elevated
+		// and exit, and the new instance reads the stored options.
+		u.toggleSystemProxy(false, true, true)
+		u.toggleTun(true)
+	default:
+		u.toggleSystemProxy(!u.isSystemProxyActive, true, true)
+	}
 }
 
 func (u *mainUI) editSelector(action selectorAction) {

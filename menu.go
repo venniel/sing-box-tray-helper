@@ -10,6 +10,7 @@ const (
 	idMenuQuit         = 5
 	idMenuTun          = 6
 	idMenuSystemProxy  = 7
+	idMenuSettings     = 8
 	idMenuModeBase     = 100
 	idMenuSelectorBase = 10000
 )
@@ -59,6 +60,7 @@ func (u *mainUI) buildMenu() (uintptr, bool) {
 
 	extras, _, _ := pCreatePopupMenu.Call()
 	appendMenu(extras, mfString, idMenuRestart, "重启")
+	appendMenu(extras, mfString, idMenuSettings, "设置")
 
 	autostartFlags := uintptr(mfString)
 	if u.autostartBusy || u.autostartState == asUnknown {
@@ -206,6 +208,9 @@ func (u *mainUI) executeMenuCommand(cmd uint32) {
 	switch cmd {
 	case idMenuRestart:
 		u.restartApp()
+		return
+	case idMenuSettings:
+		u.showSettings()
 		return
 	case idMenuAutostart:
 		u.toggleAutostart()

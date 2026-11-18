@@ -36,6 +36,7 @@ type controller struct {
 	wantsTun          bool
 	clashMode         string
 	clashModes        []string
+	coreVersion       string
 
 	selectorStates map[string]string
 
@@ -154,6 +155,7 @@ func (c *controller) handleCoreEvent(ev coreEvent) {
 		c.notifyEvent(controllerEvent{Kind: cevError, Msg: ev.Msg})
 
 	case cekAPIReady:
+		c.coreVersion = ev.Version
 		c.refreshSelectorStates()
 
 	case cekConfigModes, cekModeDone:

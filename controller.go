@@ -4,6 +4,7 @@ import (
 	"errors"
 	"fmt"
 	"path/filepath"
+	"strings"
 	"sync"
 )
 
@@ -29,6 +30,7 @@ type controller struct {
 	options     appOptions
 	sbConfig    singBoxConfig
 	selectors   []configSelector
+	configName  string
 
 	currentProcessDir string
 	isElevated        bool
@@ -51,11 +53,17 @@ type controller struct {
 	destroying        bool
 }
 
+func configFileStem(path string) string {
+	name := filepath.Base(path)
+	return strings.TrimSuffix(name, filepath.Ext(name))
+}
+
 func newController(flags appFlags) (*controller, error) {
 	c := &controller{}
 	c.currentProcessDir = includeTrailingPathDelimiter(filepath.Dir(currentExecutablePath()))
 	c.optionsFile = c.currentProcessDir + optionsFilename
 	c.options = loadOptions(c.optionsFile)
+	c.configName = configFileStem(c.options.SBConfigFile)
 	c.logger = newLogger(c.options.LogFile)
 
 	fail := func(err error) (*controller, error) {

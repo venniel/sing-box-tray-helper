@@ -265,9 +265,9 @@ func (u *mainUI) cleanup() {
 // --- Tray icon -----------------------------------------------------------
 
 // trayTip reports the proxying that is actually in effect. The full product
-// name is shown while idle; with an active mode the short name and the modes
-// are shown. TUN only counts while the core runs the TUN config, so a failed or
-// pending start never leaves a stale mode on display.
+// name is shown while idle; with an active mode the config file name and the
+// modes are shown. TUN only counts while the core runs the TUN config, so a
+// failed or pending start never leaves a stale mode on display.
 func (u *mainUI) trayTip() string {
 	tun := u.isTunActive && u.c != nil && u.c.supervisor.currentState() == csRunning
 
@@ -283,7 +283,7 @@ func (u *mainUI) trayTip() string {
 	if status == "" {
 		return appTitle
 	}
-	return appShortName + ":" + status
+	return u.c.configName + "·" + status
 }
 
 func (u *mainUI) addTrayIcon() {

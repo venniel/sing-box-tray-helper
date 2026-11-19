@@ -68,7 +68,9 @@ func setProxyOptions(proxyStr string) bool {
 
 func enableSystemProxy(host string, port int) bool {
 	value := host + ":" + strconv.Itoa(port)
-	proxyStr := "http=" + value + ";https=" + value + ";socks=" + value
+	// Browsers send ws/wss through the "socks=" entry (RFC 6455) and treat it
+	// as SOCKS4, which drops the hostname; keep only the HTTP(S) entries.
+	proxyStr := "http=" + value + ";https=" + value
 	return setProxyOptions(proxyStr)
 }
 
